@@ -1,0 +1,1 @@
+mvn -e -DskipTests compile exec:java

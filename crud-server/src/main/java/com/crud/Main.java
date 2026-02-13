@@ -12,6 +12,7 @@ public class Main {
 							config.jsonMapper(new JavalinJackson());
 						})
 						.post("/task", route::createTask)
+						.get("/task/{id}", route::getTask)
 						.start(3000);
 	}
 }

@@ -1,7 +1,8 @@
 package com.crud;
 
-public class Models {
-  record Task(int id, String title, String details) {}
-  record CreateTaskRequest(String title, String details) {}
-  record DeleteTaskRequest(int id) {}
+public final class Models {
+  public record Task(int id, String title, String details) {}
+  public record CreateTaskRequest(String title, String details) {}
+  public record UpdateTaskRequest(int id, String title, String details) {}
+  public record DeleteTaskRequest(int id) {}
 }

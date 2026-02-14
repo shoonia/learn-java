@@ -3,14 +3,9 @@ package com.crud;
 import io.javalin.http.Context;
 import com.crud.Models.*;
 
-public class Route {
-  private final Database db;
+public record Route(Database db) {
 
-  public Route(Database db) {
-    this.db = db;
-  }
-
-  public final void createTask(Context ctx) {
+  public void createTask(Context ctx) {
     if (ctx.body().isEmpty()) {
       ctx.status(400).json("Request body is empty");
       return;
@@ -23,11 +18,17 @@ public class Route {
         .check(req -> req.details().length() <= 255, "Details must be less than 255 characters")
         .get();
 
-    db.createTask(task.title(), task.details());
-    ctx.status(201).json("Success");
+    var createdTask = db.createTask(task.title(), task.details());
+
+    if (createdTask.isEmpty()) {
+      ctx.status(500).json("Failed to create task");
+      return;
+    }
+
+    ctx.status(201).json(createdTask.get());
   }
 
-  public final void getTask(Context ctx) {
+  public void getTask(Context ctx) {
     int id;
     try {
       id = Integer.parseInt(ctx.pathParam("id"));
@@ -46,7 +47,7 @@ public class Route {
     ctx.json(task.get());
   }
 
-  public final void deleteTask(Context ctx) {
+  public void deleteTask(Context ctx) {
     if (ctx.body().isEmpty()) {
       ctx.status(400).json("Request body is empty");
       return;
@@ -58,5 +59,33 @@ public class Route {
 
     db.deleteTask(request.id());
     ctx.status(204);
+  }
+
+  public void updateTask(Context ctx) {
+    if (ctx.body().isEmpty()) {
+      ctx.status(400).json("Request body is empty");
+      return;
+    }
+
+    var task = ctx.bodyValidator(UpdateTaskRequest.class)
+      .check(req -> req.id() > 0, "ID must be a positive integer")
+      .check(req -> !req.title().isEmpty(), "Title is required")
+      .check(req -> !req.details().isEmpty(), "Details is required")
+      .check(req -> req.title().length() <= 255, "Title must be less than 255 characters")
+      .check(req -> req.details().length() <= 255, "Details must be less than 255 characters")
+      .get();
+
+    var updatedTask = db.updateTask(
+      task.id(),
+      task.title(),
+      task.details()
+    );
+
+    if (updatedTask.isEmpty()) {
+      ctx.status(404).json("Task not found");
+      return;
+    }
+
+    ctx.status(200).json(updatedTask.get());
   }
 }

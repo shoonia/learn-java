@@ -33,12 +33,27 @@ public class Database {
     }
   }
 
-  public final void createTask(String title, String details) {
-    var sql = "INSERT INTO tasks (title, details) VALUES (?, ?)";
+  public final Optional<Task> createTask(String title, String details) {
+    var sql = """
+      INSERT INTO tasks (title, details)
+      VALUES (?, ?)
+      RETURNING id, title, details;
+      """;
+
     try (var stmt = prepareStatement(sql)) {
       stmt.setString(1, title);
       stmt.setString(2, details);
-      stmt.executeUpdate();
+
+      var rs = stmt.executeQuery();
+      if (rs.next()) {
+        return Optional.of(new Task(
+          rs.getInt("id"),
+          rs.getString("title"),
+          rs.getString("details")
+        ));
+      } else {
+        return Optional.empty();
+      }
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
@@ -70,6 +85,35 @@ public class Database {
     try (var stmt = prepareStatement(sql)) {
       stmt.setInt(1, id);
       stmt.executeUpdate();
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public final Optional<Task> updateTask(int id, String title, String details) {
+    var sql = """
+        UPDATE tasks
+        SET title = ?, details = ?
+        WHERE id = ?
+        RETURNING id, title, details
+        """;
+
+    try (var stmt = prepareStatement(sql)) {
+      stmt.setString(1, title);
+      stmt.setString(2, details);
+      stmt.setInt(3, id);
+
+      var rs = stmt.executeQuery();
+
+      if (rs.next()) {
+        return Optional.of(new Task(
+          rs.getInt("id"),
+          rs.getString("title"),
+          rs.getString("details")
+        ));
+      } else {
+        return Optional.empty();
+      }
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }

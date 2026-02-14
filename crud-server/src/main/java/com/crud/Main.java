@@ -13,6 +13,7 @@ public class Main {
     )
       .post("/task", route::createTask)
       .delete("/task", route::deleteTask)
+      .patch("/task", route::updateTask)
       .get("/task/{id}", route::getTask)
       .start(3000);
   }

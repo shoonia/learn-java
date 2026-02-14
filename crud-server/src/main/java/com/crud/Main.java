@@ -15,6 +15,7 @@ public class Main {
       .delete("/task", route::deleteTask)
       .patch("/task", route::updateTask)
       .get("/task/{id}", route::getTask)
+      .get("/tasks", route::listTasks)
       .start(3000);
   }
 }

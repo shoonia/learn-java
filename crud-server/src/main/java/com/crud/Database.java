@@ -3,6 +3,7 @@ package com.crud;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Optional;
 
 import com.crud.Models.Task;
@@ -113,6 +114,42 @@ public class Database {
         ));
       } else {
         return Optional.empty();
+      }
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public ArrayList<Task> queryTasks(int limit, int offset) {
+    var sql = "SELECT id, title, details FROM tasks LIMIT ? OFFSET ?;";
+    try (var stmt = prepareStatement(sql)) {
+      stmt.setInt(1, limit);
+      stmt.setInt(2, offset);
+
+      var rs = stmt.executeQuery();
+      var tasks = new ArrayList<Task>();
+      while (rs.next()) {
+        tasks.add(new Task(
+          rs.getInt("id"),
+          rs.getString("title"),
+          rs.getString("details")
+        ));
+      }
+
+      return tasks;
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public int countTasks() {
+    var sql = "SELECT COUNT(*) AS count FROM tasks;";
+    try (var stmt = prepareStatement(sql)) {
+      var rs = stmt.executeQuery();
+      if (rs.next()) {
+        return rs.getInt("count");
+      } else {
+        return 0;
       }
     } catch (SQLException e) {
       throw new RuntimeException(e);

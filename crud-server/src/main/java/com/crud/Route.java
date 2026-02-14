@@ -86,6 +86,25 @@ public record Route(Database db) {
       return;
     }
 
-    ctx.status(200).json(updatedTask.get());
+    ctx.json(updatedTask.get());
+  }
+
+  public void listTasks(Context ctx) {
+    int limit = ctx.queryParamAsClass("limit", Integer.class)
+      .check(i -> i > 0, "Limit must be a positive integer")
+      .check(i -> i < 1000, "Limit must be less than 1000")
+      .getOrDefault(50);
+
+    int offset = ctx.queryParamAsClass("offset", Integer.class)
+      .check(i -> i >= 0, "Offset must be a non-negative integer")
+      .getOrDefault(0);
+
+    var tasks = db.queryTasks(limit, offset);
+    var count = db.countTasks();
+
+    var paging = new Paging(limit, offset, count);
+    var response = new ListTasksResponse(tasks, paging);
+
+    ctx.json(response);
   }
 }

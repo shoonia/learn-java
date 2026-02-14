@@ -8,14 +8,13 @@ import java.util.Optional;
 
 import com.crud.Models.Task;
 
-public class Database {
-  static final String URL = "jdbc:sqlite:target/tasks.db";
+public record Database(String URL) {
 
   private PreparedStatement prepareStatement(String sql) throws SQLException {
     return DriverManager.getConnection(URL).prepareStatement(sql);
   }
 
-  public Database() {
+  public void init() {
     try (
         var connection = DriverManager.getConnection(URL);
         var stmt = connection.createStatement()
@@ -34,7 +33,7 @@ public class Database {
     }
   }
 
-  public final Optional<Task> createTask(String title, String details) {
+  public Optional<Task> createTask(String title, String details) {
     var sql = """
       INSERT INTO tasks (title, details)
       VALUES (?, ?)
@@ -60,7 +59,7 @@ public class Database {
     }
   }
 
-  public final Optional<Task> getTask(int id) {
+  public Optional<Task> getTask(int id) {
     var sql = "SELECT id, title, details FROM tasks WHERE id = ?";
     try (var stmt = prepareStatement(sql)) {
       stmt.setInt(1, id);
@@ -81,7 +80,7 @@ public class Database {
     }
   }
 
-  public final void deleteTask(int id) {
+  public void deleteTask(int id) {
     var sql = "DELETE FROM tasks WHERE id = ?";
     try (var stmt = prepareStatement(sql)) {
       stmt.setInt(1, id);
@@ -91,7 +90,7 @@ public class Database {
     }
   }
 
-  public final Optional<Task> updateTask(int id, String title, String details) {
+  public Optional<Task> updateTask(int id, String title, String details) {
     var sql = """
         UPDATE tasks
         SET title = ?, details = ?

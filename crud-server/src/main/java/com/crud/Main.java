@@ -11,8 +11,9 @@ public class Main {
     Javalin.create(config ->
       config.jsonMapper(new JavalinJackson())
     )
-    .post("/task", route::createTask)
-    .get("/task/{id}", route::getTask)
-    .start(3000);
+      .post("/task", route::createTask)
+      .delete("/task", route::deleteTask)
+      .get("/task/{id}", route::getTask)
+      .start(3000);
   }
 }

@@ -45,4 +45,18 @@ public class Route {
 
     ctx.json(task.get());
   }
+
+  public final void deleteTask(Context ctx) {
+    if (ctx.body().isEmpty()) {
+      ctx.status(400).json("Request body is empty");
+      return;
+    }
+
+    var request = ctx.bodyValidator(DeleteTaskRequest.class)
+      .check(req -> req.id() > 0, "ID must be a positive integer")
+      .get();
+
+    db.deleteTask(request.id());
+    ctx.status(204);
+  }
 }

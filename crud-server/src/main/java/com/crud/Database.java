@@ -64,4 +64,14 @@ public class Database {
       throw new RuntimeException(e);
     }
   }
+
+  public final void deleteTask(int id) {
+    var sql = "DELETE FROM tasks WHERE id = ?";
+    try (var stmt = prepareStatement(sql)) {
+      stmt.setInt(1, id);
+      stmt.executeUpdate();
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
 }

@@ -13,7 +13,7 @@ public class Main {
     Javalin.create(config ->
       config.jsonMapper(new JavalinJackson())
     )
-      .post("/task", route::createTask)
+      .put("/task", route::createTask)
       .delete("/task", route::deleteTask)
       .patch("/task", route::updateTask)
       .get("/task/{id}", route::getTask)

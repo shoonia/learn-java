@@ -1,7 +1,6 @@
 package com.crud;
 
 import java.util.ArrayList;
-import java.util.Date;
 
 public final class Models {
   public record Task(int id, String title, String details, String dateCreated, String dateUpdated) {}

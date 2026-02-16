@@ -18,6 +18,7 @@ public record Database(String URL) {
   private Task mapResultSetToTask(ResultSet rs) throws SQLException {
     return new Task(
         rs.getInt("id"),
+        rs.getInt("revision"),
         rs.getString("title"),
         rs.getString("details"),
         rs.getString("date_created"),
@@ -30,26 +31,18 @@ public record Database(String URL) {
         var connection = DriverManager.getConnection(URL);
         var stmt = connection.createStatement()
     ) {
-      var sql = """
+      stmt.execute(
+        """
           CREATE TABLE IF NOT EXISTS tasks (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            revision INTEGER DEFAULT 1,
             title VARCHAR(255) NOT NULL,
             details VARCHAR(255) NOT NULL,
             date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             date_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
           );
-          """;
-      var triggerSql = """
-          CREATE TRIGGER IF NOT EXISTS update_tasks_timestamp
-          AFTER UPDATE OF title, details ON tasks
-          BEGIN
-            UPDATE tasks SET date_updated = CURRENT_TIMESTAMP
-            WHERE id = OLD.id;
-          END;
-      """;
-
-      stmt.execute(sql);
-      stmt.execute(triggerSql);
+          """
+      );
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
@@ -59,7 +52,7 @@ public record Database(String URL) {
     var sql = """
       INSERT INTO tasks (title, details)
       VALUES (?, ?)
-      RETURNING *;
+      RETURNING *
       """;
 
     try (var stmt = prepareStatement(sql)) {
@@ -92,28 +85,34 @@ public record Database(String URL) {
     }
   }
 
-  public void deleteTask(int id) {
-    var sql = "DELETE FROM tasks WHERE id = ?";
+  public void deleteTask(int id, int revision) {
+    var sql = """
+      DELETE FROM tasks
+      WHERE id = ? AND revision = ?
+      """;
+
     try (var stmt = prepareStatement(sql)) {
       stmt.setInt(1, id);
+      stmt.setInt(2, revision);
       stmt.executeUpdate();
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
   }
 
-  public Optional<Task> updateTask(int id, String title, String details) {
+  public Optional<Task> updateTask(int id, int revision, String title, String details) {
     var sql = """
-        UPDATE tasks
-        SET title = ?, details = ?
-        WHERE id = ?
-        RETURNING *;
-        """;
+      UPDATE tasks
+      SET title = ?, details = ?, revision = revision + 1, date_updated = CURRENT_TIMESTAMP
+      WHERE id = ? AND revision = ?
+      RETURNING *;
+      """;
 
     try (var stmt = prepareStatement(sql)) {
       stmt.setString(1, title);
       stmt.setString(2, details);
       stmt.setInt(3, id);
+      stmt.setInt(4, revision);
 
       var rs = stmt.executeQuery();
       if (rs.next()) {
@@ -127,7 +126,12 @@ public record Database(String URL) {
   }
 
   public ArrayList<Task> queryTasks(int limit, int offset) {
-    var sql = "SELECT * FROM tasks LIMIT ? OFFSET ?;";
+    var sql = """
+      SELECT * FROM tasks
+      ORDER BY date_created DESC
+      LIMIT ? OFFSET ?
+      """;
+
     try (var stmt = prepareStatement(sql)) {
       stmt.setInt(1, limit);
       stmt.setInt(2, offset);
@@ -144,7 +148,7 @@ public record Database(String URL) {
   }
 
   public int countTasks() {
-    var sql = "SELECT COUNT(*) AS count FROM tasks;";
+    var sql = "SELECT COUNT(*) AS count FROM tasks";
     try (var stmt = prepareStatement(sql)) {
       var rs = stmt.executeQuery();
       if (rs.next()) {

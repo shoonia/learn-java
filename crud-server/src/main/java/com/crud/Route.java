@@ -55,9 +55,10 @@ public record Route(Database db) {
 
     var request = ctx.bodyValidator(DeleteTaskRequest.class)
       .check(req -> req.id() > 0, "ID must be a positive integer")
+      .check(req -> req.revision() > 0, "Revision must be a positive integer")
       .get();
 
-    db.deleteTask(request.id());
+    db.deleteTask(request.id(), request.revision());
     ctx.status(204);
   }
 
@@ -69,6 +70,7 @@ public record Route(Database db) {
 
     var task = ctx.bodyValidator(UpdateTaskRequest.class)
       .check(req -> req.id() > 0, "ID must be a positive integer")
+      .check(req -> req.revision() > 0, "Revision must be a positive integer")
       .check(req -> !req.title().isEmpty(), "Title is required")
       .check(req -> !req.details().isEmpty(), "Details is required")
       .check(req -> req.title().length() <= 255, "Title must be less than 255 characters")
@@ -77,6 +79,7 @@ public record Route(Database db) {
 
     var updatedTask = db.updateTask(
       task.id(),
+      task.revision(),
       task.title(),
       task.details()
     );

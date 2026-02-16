@@ -20,12 +20,11 @@ public record Route(Database db) {
 
     var createdTask = db.createTask(task.title(), task.details());
 
-    if (createdTask.isEmpty()) {
+    if (createdTask.isPresent()) {
+      ctx.status(201).json(createdTask.get());
+    } else {
       ctx.status(500).json("Failed to create task");
-      return;
     }
-
-    ctx.status(201).json(createdTask.get());
   }
 
   public void getTask(Context ctx) {
@@ -39,12 +38,11 @@ public record Route(Database db) {
 
     var task = db.getTask(id);
 
-    if (task.isEmpty()) {
+    if (task.isPresent()) {
+      ctx.json(task.get());
+    } else {
       ctx.status(404).json("Task not found");
-      return;
     }
-
-    ctx.json(task.get());
   }
 
   public void deleteTask(Context ctx) {
@@ -58,8 +56,19 @@ public record Route(Database db) {
       .check(req -> req.revision() > 0, "Revision must be a positive integer")
       .get();
 
-    db.deleteTask(request.id(), request.revision());
-    ctx.status(204);
+    var isDeleted = db.deleteTask(request.id(), request.revision());
+
+    if (isDeleted) {
+      ctx.status(204);
+    } else {
+      var isExists = db.isTaskExists(request.id());
+
+      if (isExists) {
+        ctx.status(409).json("Task revision mismatch");
+      } else {
+        ctx.status(404).json("Task not found");
+      }
+    }
   }
 
   public void updateTask(Context ctx) {
@@ -84,12 +93,17 @@ public record Route(Database db) {
       task.details()
     );
 
-    if (updatedTask.isEmpty()) {
-      ctx.status(404).json("Task not found");
-      return;
-    }
+    if (updatedTask.isPresent()) {
+      ctx.json(updatedTask.get());
+    } else {
+      var isExists = db.isTaskExists(task.id());
 
-    ctx.json(updatedTask.get());
+      if (isExists) {
+        ctx.status(409).json("Task revision mismatch");
+      } else {
+        ctx.status(404).json("Task not found");
+      }
+    }
   }
 
   public void listTasks(Context ctx) {

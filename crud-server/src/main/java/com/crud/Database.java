@@ -85,7 +85,7 @@ public record Database(String URL) {
     }
   }
 
-  public void deleteTask(int id, int revision) {
+  public boolean deleteTask(int id, int revision) {
     var sql = """
       DELETE FROM tasks
       WHERE id = ? AND revision = ?
@@ -94,7 +94,7 @@ public record Database(String URL) {
     try (var stmt = prepareStatement(sql)) {
       stmt.setInt(1, id);
       stmt.setInt(2, revision);
-      stmt.executeUpdate();
+      return stmt.executeUpdate() > 0;
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
@@ -156,6 +156,16 @@ public record Database(String URL) {
       } else {
         return 0;
       }
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public boolean isTaskExists(int id) {
+    var sql = "SELECT 1 FROM tasks WHERE id = ?";
+    try (var stmt = prepareStatement(sql)) {
+      stmt.setInt(1, id);
+      return stmt.executeQuery().next();
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }

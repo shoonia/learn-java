@@ -1,0 +1,11 @@
+###
+PUT http://localhost:8080/task HTTP/1.1
+Accept: application/json
+Content-Type: application/json
+
+{
+  "title": "Task 1",
+  "details": "Description of Task 1"
+}
+
+###

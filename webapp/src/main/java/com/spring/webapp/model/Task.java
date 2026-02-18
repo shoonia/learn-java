@@ -1,51 +1,51 @@
 package com.spring.webapp.model;
 
+import lombok.*;
 import jakarta.persistence.*;
-import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.*;
 
 import java.util.Date;
 
 @Entity
 @Table(name = "tasks")
+@Getter
+@AllArgsConstructor
+@Builder
+@DynamicInsert
+@DynamicUpdate
 public class Task {
+
+  protected Task() {}
+
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @Column(nullable = false, length = 255)
+  @Builder.Default
+  @Column(columnDefinition = "INTEGER DEFAULT 1")
+  private Integer revision = 1;
+
+  @Column(nullable = false)
   private String title;
 
-  @Column(nullable = false, length = 255)
+  @Column(nullable = false)
   private String details;
 
-  @Column(columnDefinition = "INTEGER DEFAULT 1")
-  private Integer revision;
-
+  @CreationTimestamp
   @Column(
     name = "date_created",
     nullable = false,
     updatable = false,
     columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
   )
-  @CreationTimestamp
   private Date dateCreated;
 
+  @UpdateTimestamp
   @Column(
     name = "date_updated",
     nullable = false,
-    updatable = false,
     columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
   )
-  @CreationTimestamp
   private Date dateUpdated;
 
-  public Task setTitle(String title) {
-    this.title = title;
-    return this;
-  }
-
-  public Task setDetails(String details) {
-    this.details = details;
-    return this;
-  }
 }

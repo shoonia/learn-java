@@ -4,8 +4,11 @@ import com.spring.webapp.dto.TaskRequest;
 import com.spring.webapp.model.Task;
 import com.spring.webapp.repository.TaskRepository;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -33,9 +36,28 @@ public class TaskController {
 
   @GetMapping("/page")
   public Page<Task> getTasks(
-    @RequestParam(defaultValue = "0") int page,
-    @RequestParam(defaultValue = "100") int size
+    @Min(value = 0, message = "page must be greater than or equal to 0")
+    @Max(Integer.MAX_VALUE)
+    @RequestParam(defaultValue = "0")
+    int page,
+
+    @Min(value = 1, message = "size must be greater than 0")
+    @Max(value = 1000, message = "size must be less than or equal to 1000")
+    @RequestParam(defaultValue = "100")
+    int size
   ) {
     return taskRepository.findAll(PageRequest.of(page, size));
+  }
+
+  @GetMapping("/{id}")
+  public ResponseEntity<?> getTask(
+    @Min(value = 1, message = "id must be greater than 0")
+    @Max(Integer.MAX_VALUE)
+    @PathVariable
+    long id
+  ) {
+    return taskRepository.findById(id)
+      .<ResponseEntity<?>>map(ResponseEntity::ok)
+      .orElseGet(() -> ResponseEntity.status(404).body("Task not found"));
   }
 }

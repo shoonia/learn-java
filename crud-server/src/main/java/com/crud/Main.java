@@ -1,12 +1,14 @@
 package com.crud;
 
+import com.crud.controllers.TaskController;
+import com.crud.repository.TaskRepository;
 import io.javalin.Javalin;
 import io.javalin.json.JavalinJackson;
 
 public class Main {
   public static void main(String[] args) {
-    var db = new Database("jdbc:sqlite:target/tasks.db");
-    var route = new Route(db);
+    var db = new TaskRepository("jdbc:sqlite:target/tasks.db");
+    var route = new TaskController(db);
 
     db.init();
 

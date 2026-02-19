@@ -3,6 +3,7 @@ package com.spring.webapp.model;
 import lombok.*;
 import jakarta.persistence.*;
 import org.hibernate.annotations.*;
+import org.springframework.data.annotation.ReadOnlyProperty;
 
 import java.util.Date;
 
@@ -19,6 +20,7 @@ public class Task {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @ReadOnlyProperty
   private Long id;
 
   @Builder.Default

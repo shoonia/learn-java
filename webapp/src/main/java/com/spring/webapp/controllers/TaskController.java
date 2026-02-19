@@ -1,5 +1,6 @@
 package com.spring.webapp.controllers;
 
+import com.spring.webapp.dto.DeleteRequest;
 import com.spring.webapp.dto.TaskRequest;
 import com.spring.webapp.model.Task;
 import com.spring.webapp.repository.TaskRepository;
@@ -34,6 +35,15 @@ public class TaskController {
     return taskRepository.save(task);
   }
 
+  @DeleteMapping
+  public void deleteTask(
+    @Valid
+    @RequestBody
+    DeleteRequest req
+  ) {
+    taskRepository.deleteById(req.id());
+  }
+
   @GetMapping("/page")
   public Page<Task> getTasks(
     @Min(value = 0, message = "page must be greater than or equal to 0")
@@ -52,7 +62,7 @@ public class TaskController {
   @GetMapping("/{id}")
   public ResponseEntity<?> getTask(
     @Min(value = 1, message = "id must be greater than 0")
-    @Max(Integer.MAX_VALUE)
+    @Max(Long.MAX_VALUE)
     @PathVariable
     long id
   ) {

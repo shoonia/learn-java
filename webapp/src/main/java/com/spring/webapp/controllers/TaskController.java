@@ -11,6 +11,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,6 +27,7 @@ public class TaskController {
   }
 
   @PutMapping
+  @ResponseStatus(HttpStatus.CREATED)
   public Task saveTask(
     @Valid
     @RequestBody
@@ -40,6 +42,7 @@ public class TaskController {
   }
 
   @DeleteMapping
+  @ResponseStatus(HttpStatus.NO_CONTENT)
   public void deleteTask(
     @Valid
     @RequestBody
@@ -72,7 +75,7 @@ public class TaskController {
   ) {
     return taskRepository.findById(id)
       .<ResponseEntity<?>>map(ResponseEntity::ok)
-      .orElseGet(() -> ResponseEntity.status(404).body("Task not found"));
+      .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("Task not found"));
   }
 
   @PatchMapping
@@ -93,7 +96,7 @@ public class TaskController {
 
       return ResponseEntity.ok(taskRepository.save(task));
     } else  {
-      return ResponseEntity.status(404).body("Task not found");
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Task not found");
     }
   }
 }

@@ -1,7 +1,7 @@
 package com.spring.webapp.controllers;
 
 import com.spring.webapp.dto.DeleteRequest;
-import com.spring.webapp.dto.TaskRequest;
+import com.spring.webapp.dto.CreateRequest;
 import com.spring.webapp.dto.UpdateRequest;
 import com.spring.webapp.model.Task;
 import com.spring.webapp.repository.TaskRepository;
@@ -30,7 +30,7 @@ public class TaskController {
   public Task saveTask(
     @Valid
     @RequestBody
-    TaskRequest req
+    CreateRequest req
   ) {
     var task = Task.builder()
       .title(req.title())
@@ -50,7 +50,7 @@ public class TaskController {
   }
 
   @GetMapping("/page")
-  public Page<Task> getTasks(
+  public Page<?> getTasks(
     @Min(value = 0, message = "page must be greater than or equal to 0")
     @Max(Integer.MAX_VALUE)
     @RequestParam(defaultValue = "0")

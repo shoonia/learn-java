@@ -2,8 +2,10 @@ package com.spring.webapp.controllers;
 
 import com.spring.webapp.dto.DeleteRequest;
 import com.spring.webapp.dto.TaskRequest;
+import com.spring.webapp.dto.UpdateRequest;
 import com.spring.webapp.model.Task;
 import com.spring.webapp.repository.TaskRepository;
+import jakarta.persistence.EntityManager;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -12,13 +14,16 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+
 @RestController
 @RequestMapping("/task")
 public class TaskController {
   private final TaskRepository taskRepository;
+  private final EntityManager entityManager;
 
-  public TaskController(TaskRepository taskRepository) {
+  public TaskController(TaskRepository taskRepository, EntityManager entityManager) {
     this.taskRepository = taskRepository;
+    this.entityManager = entityManager;
   }
 
   @PutMapping
@@ -69,5 +74,27 @@ public class TaskController {
     return taskRepository.findById(id)
       .<ResponseEntity<?>>map(ResponseEntity::ok)
       .orElseGet(() -> ResponseEntity.status(404).body("Task not found"));
+  }
+
+  @PatchMapping
+  public ResponseEntity<?> updateTask(
+    @Valid
+    @RequestBody
+    UpdateRequest req
+  ) {
+    var entity = taskRepository.findById(req.id());
+
+    if (entity.isPresent()) {
+      var task = entity.get();
+
+      req.getTitle().ifPresent(task::setTitle);
+      req.getDetails().ifPresent(task::setDetails);
+      task.setRevision(req.revision());
+      entityManager.detach(task);
+
+      return ResponseEntity.ok(taskRepository.save(task));
+    } else  {
+      return ResponseEntity.status(404).body("Task not found");
+    }
   }
 }

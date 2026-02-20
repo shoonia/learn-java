@@ -10,6 +10,7 @@ import java.util.Date;
 @Entity
 @Table(name = "tasks")
 @Getter
+@Setter
 @AllArgsConstructor
 @Builder
 @DynamicInsert
@@ -24,7 +25,7 @@ public class Task {
   private Long id;
 
   @Builder.Default
-  @Column(columnDefinition = "INTEGER DEFAULT 1")
+  @Version
   private Integer revision = 1;
 
   @Column(nullable = false)

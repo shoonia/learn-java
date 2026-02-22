@@ -33,10 +33,9 @@ public class TaskController {
     @RequestBody
     CreateRequest req
   ) {
-    var task = Task.builder()
-      .title(req.title())
-      .details(req.details())
-      .build();
+    var task = new Task();
+    task.setTitle(req.title());
+    task.setDetails(req.getDetails().orElse(""));
 
     return taskRepository.save(task);
   }
@@ -73,9 +72,13 @@ public class TaskController {
     @PathVariable
     long id
   ) {
-    return taskRepository.findById(id)
-      .<ResponseEntity<?>>map(ResponseEntity::ok)
-      .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("Task not found"));
+    var entity = taskRepository.findById(id);
+
+    if (entity.isEmpty()) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Task not found");
+    }
+
+    return ResponseEntity.ok(entity.get());
   }
 
   @PatchMapping
@@ -86,17 +89,17 @@ public class TaskController {
   ) {
     var entity = taskRepository.findById(req.id());
 
-    if (entity.isPresent()) {
-      var task = entity.get();
-
-      req.getTitle().ifPresent(task::setTitle);
-      req.getDetails().ifPresent(task::setDetails);
-      task.setRevision(req.revision());
-      entityManager.detach(task);
-
-      return ResponseEntity.ok(taskRepository.save(task));
-    } else  {
+    if (entity.isEmpty()) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Task not found");
     }
+
+    var task = entity.get();
+
+    req.getTitle().ifPresent(task::setTitle);
+    req.getDetails().ifPresent(task::setDetails);
+    task.setRevision(req.revision());
+    entityManager.detach(task);
+
+    return ResponseEntity.ok(taskRepository.save(task));
   }
 }

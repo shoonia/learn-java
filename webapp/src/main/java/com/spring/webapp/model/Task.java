@@ -12,29 +12,28 @@ import java.util.Date;
 @Getter
 @Setter
 @AllArgsConstructor
-@Builder
 @DynamicInsert
 @DynamicUpdate
 public class Task {
 
-  protected Task() {}
+  public Task() {}
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @ReadOnlyProperty
   private Long id;
 
-  @Builder.Default
   @Version
   private Integer revision = 1;
 
   @Column(nullable = false)
   private String title;
 
-  @Column(nullable = false)
+  @Column
   private String details;
 
   @CreationTimestamp
+  @ReadOnlyProperty
   @Column(
     name = "date_created",
     nullable = false,

@@ -9,6 +9,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
 import org.acme.dto.*;
 import org.acme.model.Task;
 import org.acme.repository.TaskRepository;
@@ -28,11 +29,13 @@ public class TaskController {
     CreateRequest req
   ) {
     var task = new Task();
+    var taskResponse = new TaskResponse(task);
+
     task.title = req.title();
     task.details = req.getDetails().orElse("");
     task.persist();
 
-    return Response.status(Response.Status.CREATED).entity(task).build();
+    return Response.status(Status.CREATED).entity(taskResponse).build();
   }
 
   @GET
@@ -45,10 +48,11 @@ public class TaskController {
     var task = taskRepository.findById(id);
 
     if (task == null) {
-      return Response.status(Response.Status.NOT_FOUND).build();
+      return Response.status(Status.NOT_FOUND).build();
     }
 
-    return Response.ok(task).build();
+    var taskResponse = new TaskResponse(task);
+    return Response.ok(taskResponse).build();
   }
 
   @DELETE
@@ -62,7 +66,7 @@ public class TaskController {
     var task = taskRepository.findById(id);
 
     if (task == null) {
-      return Response.status(Response.Status.NOT_FOUND).build();
+      return Response.status(Status.NOT_FOUND).build();
     }
 
     task.delete();

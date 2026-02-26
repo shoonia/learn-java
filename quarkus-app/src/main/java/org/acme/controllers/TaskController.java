@@ -51,6 +51,24 @@ public class TaskController {
     return Response.ok(task).build();
   }
 
+  @DELETE
+  @Path("/{id}")
+  @Transactional
+  public Response deleteTask(
+    @PathParam("id")
+    @Min(1)
+    long id
+  ) {
+    var task = taskRepository.findById(id);
+
+    if (task == null) {
+      return Response.status(Response.Status.NOT_FOUND).build();
+    }
+
+    task.delete();
+    return Response.noContent().build();
+  }
+
   @GET
   @Path("/page")
   public Response getPage(

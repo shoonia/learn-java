@@ -5,7 +5,7 @@ import org.acme.model.Task;
 import java.util.List;
 
 public record PageResponse(
-  List<Task> items,
+  List<Task> tasks,
   Paging paging
 ) {
 

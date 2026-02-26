@@ -2,7 +2,7 @@ package org.acme.dto;
 
 public record Paging(
   int page,
-  int limit,
+  int size,
   long totalCount,
   int pageCount
 ) {

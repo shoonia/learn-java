@@ -38,21 +38,21 @@ public class TaskController {
   @GET
   @Path("/page")
   public Response getPage(
-    @QueryParam("limit")
+    @QueryParam("page")
     @Min(0)
     @DefaultValue("0")
     int page,
 
-    @QueryParam("offset")
+    @QueryParam("size")
     @Min(1)
     @Max(1000)
     @DefaultValue("100")
-    int limit
+    int size
   ) {
-    var result = taskRepository.findAll().page(Page.of(page, limit));
+    var result = taskRepository.findAll().page(Page.of(page, size));
     var paging = new Paging(
       page,
-      limit,
+      size,
       result.count(),
       result.pageCount()
     );

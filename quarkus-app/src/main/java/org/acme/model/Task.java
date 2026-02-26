@@ -11,7 +11,7 @@ import java.util.Date;
 @Entity
 public class Task extends PanacheEntity {
   @Version
-  public Integer revision = 1;
+  public long revision = 1;
 
   @NotBlank(message="Title is required")
   @Column(nullable = false)
@@ -36,4 +36,12 @@ public class Task extends PanacheEntity {
     columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
   )
   public Date dateUpdated;
+
+  public void setTitle(String title) {
+    this.title = title;
+  }
+
+  public void setDetails(String details) {
+    this.details = details;
+  }
 }

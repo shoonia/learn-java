@@ -31,11 +31,29 @@ public class TaskController {
     var task = new Task();
     var taskResponse = new TaskResponse(task);
 
-    task.title = req.title();
-    task.details = req.getDetails().orElse("");
+    task.setTitle(req.title());
+    task.setDetails(req.getDetails().orElse(""));
     task.persist();
 
     return Response.status(Status.CREATED).entity(taskResponse).build();
+  }
+
+  @PATCH
+  @Transactional
+  public Response updateTask(
+    @Valid
+    UpdateRequest req
+  ) {
+    var task = new Task();
+
+    task.id = req.id();
+    task.revision = req.revision();
+    req.getTitle().ifPresent(task::setTitle);
+    req.getDetails().ifPresent(task::setDetails);
+
+    var updated = taskRepository.getEntityManager().merge(task);
+
+    return Response.ok(new TaskResponse(updated)).build();
   }
 
   @GET
@@ -51,8 +69,7 @@ public class TaskController {
       return Response.status(Status.NOT_FOUND).build();
     }
 
-    var taskResponse = new TaskResponse(task);
-    return Response.ok(taskResponse).build();
+    return Response.ok(new TaskResponse(task)).build();
   }
 
   @DELETE

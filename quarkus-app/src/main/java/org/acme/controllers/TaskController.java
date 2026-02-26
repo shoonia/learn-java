@@ -36,6 +36,22 @@ public class TaskController {
   }
 
   @GET
+  @Path("/{id}")
+  public Response getTask(
+    @PathParam("id")
+    @Min(1)
+    long id
+  ) {
+    var task = taskRepository.findById(id);
+
+    if (task == null) {
+      return Response.status(Response.Status.NOT_FOUND).build();
+    }
+
+    return Response.ok(task).build();
+  }
+
+  @GET
   @Path("/page")
   public Response getPage(
     @QueryParam("page")
